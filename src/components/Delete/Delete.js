@@ -9,7 +9,7 @@ import {
 import { useParams } from 'react-router-dom';
 
 // Import url 
-import { delete_game } from '../../urlCalling/url';
+import firebaseDB from '../../firebase/firebase';
 import history from '../../history/history';
 
 const Delete = () => {
@@ -18,19 +18,7 @@ const Delete = () => {
 
     // Handler clicking yes
     const yesClick = () => {
-        fetch(delete_game + id, {
-            method: 'DELETE',
-            headers: {
-                'Content-Type': 'application/json'
-            }
-        })
-        .then(resp => resp.json())
-        .then(game => {
-            console.log(game);
-        })
-        .catch(() => {
-            console.log("Server not found");    // For checking. Not alerting on mobile screen
-        })
+        firebaseDB.child("games/g" + id).remove();
         history.push("/");
     }
 

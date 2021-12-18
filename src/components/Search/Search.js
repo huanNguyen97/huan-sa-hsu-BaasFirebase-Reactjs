@@ -7,7 +7,7 @@ import {
 } from 'react-bootstrap';
 
 // URL imported
-import { search_game } from '../../urlCalling/url';
+import firebaseDB from '../../firebase/firebase';
 
 const Search = () => {
     // Set data
@@ -16,16 +16,17 @@ const Search = () => {
 
     // Fetching data
     useEffect(() => {
-        fetch(search_game + key_search, {
-            method: 'GET',
-        })
-        .then(resp => resp.json())
-        .then(game => {
-            setData(game.game_list);
-            console.log(game);
-        })
-        .catch(() => {
-            console.log("Server not found");    // For checking. Not alerting on mobile screen
+        firebaseDB.child("games").once("value", snapshot => {
+            console.log(key_search.toLowerCase());
+            const games_list = [];
+
+            snapshot.forEach(child => {
+                const game = child.val().name;
+                if (game.toLowerCase().includes(key_search.toLowerCase())) {
+                    games_list.push(child.val())
+                }
+            })
+            setData(games_list);
         })
     }, [])
 

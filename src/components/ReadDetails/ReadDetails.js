@@ -4,26 +4,19 @@ import { useParams } from 'react-router-dom';
 import { Table } from 'react-bootstrap';
 
 // Url Imported
-import { read_details_game } from '../../urlCalling/url';
+import firebaseDB from '../../firebase/firebase';
 
 const ReadDetails = () => {
     // Set Data
     const [data, setData] = useState({});
     const { id } = useParams();
 
-    // Fetching Data
+    // Fetching Data firebase
     useEffect(() => {
-        fetch(read_details_game + id, {
-            method: 'GET'
+        firebaseDB.child("games/g" + id).once("value", snapshot => {
+            setData(snapshot.val());
         })
-        .then(resp => resp.json())
-        .then(game_details => {
-            setData(game_details.game_detail);
-        })
-        .catch(() => {
-            console.log("Server not found");     // For checking. Not alerting on mobile screen
-        })
-    }, [])  // Warning at here but it's okay
+    }, [data])  // Warning at here but it's okay
 
     // Render Template
     const TemplateRendering = () => {

@@ -10,7 +10,7 @@ import {
 } from 'react-bootstrap';
 
 // Url imported
-import { read_details_game, edit_game } from '../../urlCalling/url';
+import firebaseDB from '../../firebase/firebase';
 import history from '../../history/history';
 
 const Edit = () => {
@@ -27,47 +27,31 @@ const Edit = () => {
 
     // Fetching Data
     useEffect(() => {
-        fetch(read_details_game + id, {
-            method: 'GET'
-        })
-        .then(resp => resp.json())
-        .then(game_details => {
-            setData(game_details.game_detail);
+        firebaseDB.child("games/g" + id).once("value", snapshot => {
+            setData(snapshot.val());
 
-            setName(game_details.game_detail.name);
-            setCategory(game_details.game_detail.category);
-            setBrand(game_details.game_detail.brand);
-            setYear_released(game_details.game_detail.year_released);
-            setPrice(game_details.game_detail.price);
-        })
-        .catch(() => {
-            console.log("Server not found");     // For checking. Not alerting on mobile screen
+            setName(snapshot.val().name);
+            setCategory(snapshot.val().category);
+            setBrand(snapshot.val().brand);
+            setYear_released(snapshot.val().year_released);
+            setPrice(snapshot.val().price);
         })
     }, [])  // Warning at here but it's okay
 
     // Update game
     const updateGame = () => {
-        fetch(edit_game + id, {
-            method: 'PUT',
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded'
-            },
-            body: new URLSearchParams({
-                id: id,     // Just only id cannot edit.
-                name: name,
-                category: category,
-                brand: brand,
-                year_released: year_released,
-                price: price
-            })
-        })
-        .then(resp => resp.json())
-        .then(game => {
-            console.log(game);
-        })
-        .catch(() => {
-            console.log("Server not found");    // For checking. Not alerting on mobile screen
-        })
+        firebaseDB.child("games/g" + id).once("value", snapshot => {
+            data.id = id
+            data.name = name;
+            data.category = category;
+            data.brand = brand;
+            data.year_released = year_released;
+            data.price = price;
+        }).then(item => {
+            firebaseDB.child("games/g" + data.id).set(data);
+        }).catch(error => {
+            console.log(error);     // Just for testing
+        });
 
         history.push('/');
     }

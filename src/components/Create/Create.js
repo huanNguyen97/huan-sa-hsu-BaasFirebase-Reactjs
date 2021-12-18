@@ -10,44 +10,61 @@ import {
 } from 'react-bootstrap';
 
 // Url Imported
-import { create_new_game } from '../../urlCalling/url';
+// import { create_new_game } from '../../urlCalling/url';
+import firebaseDB from '../../firebase/firebase';
 import history from '../../history/history';
 
+// Declare type of data Game
+const initialState = {
+    id: "",
+    name: "",
+    category: "",
+    brand: "",
+    year_released: "",
+    price: ""
+};
 
 const Create = () => {
-    // // Set data
+    // Set data
+    const [state, setState] = useState(initialState);
+
     const [name, setName] = useState();
     const [category, setCategory] = useState();
     const [brand, setBrand] = useState();
     const [year_released, setYear_released] = useState();
     const [price, setPrice] = useState();
-    
-    // const history = useHistory();
 
     // Create new game
-    const createGameHandler = () => {
-        // check status
-        fetch(create_new_game, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded'
-            },
-            body: new URLSearchParams({
-                id: null,     // Just only id cannot edit.
-                name: name,
-                category: category,
-                brand: brand,
-                year_released: year_released,
-                price: price
+    const createGameHandler = (e) => {
+        e.preventDefault();
+
+        if (!name || !category || !brand || !year_released || !price) {
+            console.log("Some things was nil");     // Just for testing
+        } else {
+            // Add new data
+            state.name = name;
+            state.category = category;
+            state.brand = brand;
+            state.year_released = year_released;
+            state.price = price;
+
+            // Push in firebase
+            firebaseDB.child("games").once("value", snapshot => {
+                // Take length of child "games"
+                let length = parseInt(snapshot.numChildren(), 10);
+
+                if (length === 0) {
+                    state.id = 1;
+                } else {
+                    state.id = length + 1;
+                }
+                
+            }).then(item => {
+                firebaseDB.child("games/g" + state.id).set(state);
+            }).catch(error => {
+                console.log(error);     // Just for testing
             })
-        })
-        .then(resp => resp.json())
-        .then(game => {
-            console.log(game);
-        })
-        .catch(() => {
-            console.log("Server not found");    // For checking. Not alerting on mobile screen
-        })
+        }
 
         history.push('/');
     };
